@@ -295,5 +295,19 @@ contract("Flight Surety Tests", async accounts => {
         "Passenger should be able to buy insurance correctly"
       );
     });
+
+    it("Airline can withdraw credited amount", async () => {
+      const balanceBefore = await web3.eth.getBalance(config.firstAirline);
+      
+      try {
+        await config.flightSuretyApp.withdraw({ from: config.firstAirline });
+      } catch (error) {
+        console.log(error.toString());
+      }
+
+      const balanceAfter = await web3.eth.getBalance(config.firstAirline);
+
+      assert(+balanceBefore < +balanceAfter, "Airline withdrawal failed");
+    });
   });
 });

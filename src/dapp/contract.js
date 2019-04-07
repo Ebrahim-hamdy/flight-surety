@@ -5,13 +5,18 @@ import Web3 from "web3";
 export default class Contract {
   constructor(network, callback) {
     let config = Config[network];
+
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
+
     this.flightSuretyApp = new this.web3.eth.Contract(
       FlightSuretyApp.abi,
       config.appAddress
     );
+
     this.initialize(callback);
+
     this.owner = null;
+    this.firstAirline = null;
     this.airlines = [];
     this.flights = [];
     this.passengers = [];
@@ -20,7 +25,7 @@ export default class Contract {
   initialize(callback) {
     this.web3.eth.getAccounts((error, accts) => {
       this.owner = accts[0];
-      console.log(accts);
+      this.firstAirline = accts[1];
 
       let counter = 1;
 
@@ -49,7 +54,7 @@ export default class Contract {
 
     self.flightSuretyApp.methods
       .fetchFlightStatus(flightCode, destination, timestamp)
-      .send({ from: self.owner }, (error, result) => {
+      .send({ from: self.firstAirline }, (error, result) => {
         callback(error, result);
       });
   }
@@ -58,7 +63,7 @@ export default class Contract {
     let self = this;
     self.flightSuretyApp.methods
       .registerAirline(airline)
-      .send({ from: this.owner }, callback);
+      .send({ from: self.firstAirline }, callback);
   }
 
   fundAirline(amount, callback) {
@@ -67,7 +72,7 @@ export default class Contract {
 
     self.flightSuretyApp.methods
       .fundAirline()
-      .send({ from: this.owner, value: price }, callback);
+      .send({ from: self.firstAirline, value: price }, callback);
   }
 
   registerFlight(flightCode, price, departure, destination, callback) {
@@ -81,7 +86,7 @@ export default class Contract {
       value,
       departure,
       destination,
-      { from: this.owner },
+      { from: self.firstAirline },
       callback
     );
   }
@@ -96,7 +101,7 @@ export default class Contract {
       destination,
       timestamp,
       {
-        from: this.owner,
+        from: self.firstAirline,
         value: value
       },
       callback
@@ -106,6 +111,6 @@ export default class Contract {
   withdraw(callback) {
     self.flightSuretyApp.methods
       .withdraw()
-      .send({ from: this.owner }, callback);
+      .send({ from: self.firstAirline }, callback);
   }
 }

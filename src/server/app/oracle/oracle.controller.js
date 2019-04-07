@@ -45,6 +45,8 @@ export const oracleController = {
         );
       }
     });
+
+    oracleController.registerOracle();
   },
 
   registerOracle: async () => {
